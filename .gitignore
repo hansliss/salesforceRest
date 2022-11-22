@@ -2,3 +2,4 @@ org.ini
 server.crt
 server.csr
 server.key
+saved_session.json

@@ -24,7 +24,34 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import utils
 
-def auth(client_id, username, loginURL, keyfile, authURL):
+def auth(configfile, instance):
+
+    config = configparser.ConfigParser()
+    config.read(configfile)
+    session_cache = config[instance]['session_cache']
+    api_version = config[instance]['api_version']
+    try:
+        with open(session_cache, "r") as f:
+            res = json.loads(f.read())
+            url = res["instance_url"] + "/services/data/" + api_version + "/limits"
+            headers = {
+       	        "Authorization": res["token_type"] + " " + res["access_token"]
+            }
+            result = requests.get(url, headers=headers)
+            if result.status_code == 200:
+                return res
+            else:
+                print("Reauthorizing")
+                res = None
+    except:
+        print("Failed to load cached session data")
+
+    client_id = config[instance]['client_id']
+    username = config[instance]['username']
+    loginURL = config[instance]['loginURL']
+    keyfile = config[instance]['keyfile']
+    authURL = config[instance]['authURL']
+
 
     body = 'grant_type=' + "urn:ietf:params:oauth:grant-type:jwt-bearer"
 
@@ -57,10 +84,12 @@ def auth(client_id, username, loginURL, keyfile, authURL):
     result = requests.post(authURL, data=body.encode('latin1'), headers=headers)
     
     if result.status_code != 200:
-        print("Error: " + result.status_code + " : " + result.reason)
+        print("Error: " + str(result.status_code) + " : " + result.reason)
         return None
     else:
         authInfo=json.loads(result.text)
+        with open(session_cache, "w") as f:
+            f.write(result.text)
         return authInfo
 
 if __name__ == "__main__":
@@ -70,17 +99,7 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--instance', required=True,
                                             help='name of the instance to use from the config file')
 
-    args = parser.parse_args()
-
-    config = configparser.ConfigParser()
-    config.read(args.configfile)
-    client_id = config[args.instance]['client_id']
-    username = config[args.instance]['username']
-    loginURL = config[args.instance]['loginURL']
-    keyfile = config[args.instance]['keyfile']
-    authURL = config[args.instance]['authURL']
-
-    res = auth(client_id, username, loginURL, keyfile, authURL)
+    res = auth(args.configfile, args.instance)
     pp = pprint.PrettyPrinter(width=80, compact=False)
     pp.pprint(res)
     

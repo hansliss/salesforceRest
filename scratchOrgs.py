@@ -30,14 +30,9 @@ if __name__ == "__main__":
     
     config = configparser.ConfigParser()
     config.read(args.configfile)
-    client_id = config[args.instance]['client_id']
-    username = config[args.instance]['username']
-    loginURL = config[args.instance]['loginURL']
-    keyfile = config[args.instance]['keyfile']
-    authURL = config[args.instance]['authURL']
     api_version = config[args.instance]['api_version']
     
-    res = salesforceAuth.auth(client_id, username, loginURL, keyfile, authURL)
+    res = salesforceAuth.auth(args.configfile, args.instance)
     if res != None:
         url = res["instance_url"] + "/services/data/" + api_version + "/limits"
         headers = {
@@ -45,7 +40,7 @@ if __name__ == "__main__":
         }
         result = requests.get(url, headers=headers)
         if result.status_code != 200:
-            print("Error: " + result.status_code + " : " + result.reason)
+            print("Error: " + str(result.status_code) + " : " + result.reason)
         else:
             limits=json.loads(result.text)
             print("Active scratch orgs remaining: " + str(limits["ActiveScratchOrgs"]["Remaining"]) + " (max " + str(limits["ActiveScratchOrgs"]["Max"]) + ")")

@@ -1,5 +1,6 @@
 [dev]
 client_id = <CONSUMER KEY>
+session_cache = saved_session.json
 username =  <your login name>
 loginURL =  https://login.salesforce.com
 keyfile =   server.key
