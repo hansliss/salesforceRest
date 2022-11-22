@@ -1,0 +1,8 @@
+[dev]
+client_id = <CONSUMER KEY>
+username =  <your login name>
+loginURL =  https://login.salesforce.com
+keyfile =   server.key
+authURL =   https://login.salesforce.com/services/oauth2/token
+rest_endpoint = /services/data
+api_version = v56.0
